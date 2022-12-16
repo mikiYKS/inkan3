@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function () {
   $("#run").click(() => tryCatch(getKakuin));
 });
 
@@ -19,19 +19,19 @@ function getKakuin() {
 
   authenticator
     .authenticate(OfficeHelpers.DefaultEndpoints.Microsoft)
-    .then(function(token) {
+    .then(function (token) {
       access_token = token.access_token;
       //API呼び出し
-      $(function() {
+      $(function () {
         $.ajax({
           url:
             "https://graph.microsoft.com/v1.0/sites/20531fc2-c6ab-4e1e-a532-9c8e15afed0d/drive/items/01SG44IHMJY6HM4OB2XJGZ34EYB77ZANB2",
           type: "GET",
-          beforeSend: function(xhr) {
+          beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + access_token);
           }
         }).then(
-          async function(data) {
+          async function (data) {
             const obj = data["@microsoft.graph.downloadUrl"];
             var kakuinbase64 = await getImageBase64(obj);
             //ここからkakuinbase64を張り付ける処理
@@ -39,22 +39,23 @@ function getKakuin() {
 
             //ログ出力
             $(function () {
-              Office.context.document.getFilePropertiesAsync(async function (asyncResult) {
-                var fileUrl = asyncResult.value.url;
-                var fileName;
-                var inkanName;
-                if (fileUrl == "") {
-                  fileName = '未保存エクセル';
-                  inkanName = "角印";
+              Excel.run(async (context) => {
+                var inkanName = $("#name").val();
+                context.workbook.load("name");
+                await context.sync();
+                const alligator = ["XLSX", "XLSM", "XLSB", "XLS", "XLTX", "XLTM", "XLT"];
+                const ext = context.workbook.name.split('.').pop().toUpperCase();
+                if (alligator.indexOf(ext) == -1) {
+                  var fileName = '未保存エクセル';
                 } else {
-                  fileName = fileUrl.match(".+/(.+?)([\?#;].*)?$")[1];
-                  inkanName = "角印";
+                  var fileName = context.workbook.name;
                 };
                 inkanLog(inkanName, fileName);
               });
             });
+
           },
-          function(data) {
+          function (data) {
             console.log(data);
           }
         );
@@ -81,7 +82,7 @@ async function tryCatch(callback) {
   }
 }
 
-Office.initialize = function(reason) {
+Office.initialize = function (reason) {
   if (OfficeHelpers.Authenticator.isAuthDialog()) return;
 };
 
@@ -123,10 +124,10 @@ function inkanLog(inkanName, inkanFile) {
     scope: scope
   });
 
-  authenticator.authenticate(OfficeHelpers.DefaultEndpoints.Microsoft).then(function(token) {
+  authenticator.authenticate(OfficeHelpers.DefaultEndpoints.Microsoft).then(function (token) {
     access_token = token.access_token;
 
-    $(function() {
+    $(function () {
       $.ajax({
         url:
           "https://graph.microsoft.com/v1.0/sites/20531fc2-c6ab-4e1e-a532-9c8e15afed0d/lists/6aac0560-622e-4ee1-ba8f-73b32d8e9f05/items",
@@ -138,12 +139,12 @@ function inkanLog(inkanName, inkanFile) {
           }
         }),
         contentType: "application/json",
-        beforeSend: function(xhr) {
+        beforeSend: function (xhr) {
           xhr.setRequestHeader("Authorization", "Bearer " + access_token);
         }
       }).then(
-        async function(data) {},
-        function(data) {
+        async function (data) { },
+        function (data) {
           console.log(data);
         }
       );
