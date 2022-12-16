@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
   $("#run").click(() => tryCatch(getKakuin));
 });
 
@@ -6,7 +6,7 @@ function getKakuin() {
   var authenticator;
   var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
   var redirect_url = "https://mikiyks.github.io/inkan3/";
-  var scope = "https://graph.microsoft.com/Sites.Read.All";
+  var scope = "https://graph.microsoft.com/Files.Read.All";
   var access_token;
 
   authenticator = new OfficeHelpers.Authenticator();
@@ -19,27 +19,34 @@ function getKakuin() {
 
   authenticator
     .authenticate(OfficeHelpers.DefaultEndpoints.Microsoft)
-    .then(function (token) {
+    .then(function(token) {
       access_token = token.access_token;
       //API呼び出し
-      $(function () {
+      $(function() {
         $.ajax({
           url:
             "https://graph.microsoft.com/v1.0/sites/20531fc2-c6ab-4e1e-a532-9c8e15afed0d/drive/items/01SG44IHMJY6HM4OB2XJGZ34EYB77ZANB2",
           type: "GET",
-          beforeSend: function (xhr) {
+          beforeSend: function(xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + access_token);
           }
         }).then(
-          async function (data) {
+          async function(data) {
             const obj = data["@microsoft.graph.downloadUrl"];
             var kakuinbase64 = await getImageBase64(obj);
-
             //ここからkakuinbase64を張り付ける処理
             inkanpaste(kakuinbase64);
 
+            //ログ出力
+            Excel.run(async (context) => {
+              context.workbook.load("name");
+              await context.sync();
+              const fileName = context.workbook.name;
+              const inkanName = "角印";
+              inkanLog(inkanName, fileName);
+            });
           },
-          function (data) {
+          function(data) {
             console.log(data);
           }
         );
@@ -66,13 +73,12 @@ async function tryCatch(callback) {
   }
 }
 
-Office.initialize = function (reason) {
+Office.initialize = function(reason) {
   if (OfficeHelpers.Authenticator.isAuthDialog()) return;
 };
 
 async function onWorkSheetSingleClick(x, y, pic) {
   await Excel.run(async (context) => {
-
     const shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
     const shpStampImage = shapes.addImage(pic);
     shpStampImage.name = "印鑑";
@@ -90,5 +96,49 @@ async function inkanpaste(pic) {
     await context.sync();
     //印鑑生成実行
     onWorkSheetSingleClick(cell.left, cell.top, pic);
+  });
+}
+
+//SharePointListにログ出力
+function inkanLog(inkanName, inkanFile) {
+  var authenticator;
+  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
+  var redirect_url = "https://mikiyks.github.io/inkan3/";
+  var scope = "https://graph.microsoft.com/Sites.ReadWrite.All";
+  var access_token;
+
+  authenticator = new OfficeHelpers.Authenticator();
+
+  //access_token取得
+  authenticator.endpoints.registerMicrosoftAuth(client_id, {
+    redirectUrl: redirect_url,
+    scope: scope
+  });
+
+  authenticator.authenticate(OfficeHelpers.DefaultEndpoints.Microsoft).then(function(token) {
+    access_token = token.access_token;
+
+    $(function() {
+      $.ajax({
+        url:
+          "https://graph.microsoft.com/v1.0/sites/20531fc2-c6ab-4e1e-a532-9c8e15afed0d/lists/6aac0560-622e-4ee1-ba8f-73b32d8e9f05/items",
+        type: "POST",
+        data: JSON.stringify({
+          fields: {
+            Title: inkanName,
+            FileName: inkanFile
+          }
+        }),
+        contentType: "application/json",
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+        }
+      }).then(
+        async function(data) {},
+        function(data) {
+          console.log(data);
+        }
+      );
+    });
   });
 }
