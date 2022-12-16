@@ -38,12 +38,20 @@ function getKakuin() {
             inkanpaste(kakuinbase64);
 
             //ログ出力
-            Excel.run(async (context) => {
-              context.workbook.load("name");
-              await context.sync();
-              const fileName = context.workbook.name;
-              const inkanName = "角印";
-              inkanLog(inkanName, fileName);
+            $(function () {
+              Office.context.document.getFilePropertiesAsync(async function (asyncResult) {
+                var fileUrl = asyncResult.value.url;
+                var fileName;
+                var inkanName;
+                if (fileUrl == "") {
+                  fileName = '未保存';
+                  inkanName = "角印";
+                } else {
+                  fileName = fileUrl.match(".+/(.+?)([\?#;].*)?$")[1];
+                  inkanName = "角印";
+                };
+                inkanLog(inkanName, fileName);
+              });
             });
           },
           function(data) {
