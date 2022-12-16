@@ -40,7 +40,7 @@ function getKakuin() {
             //ログ出力
             $(function () {
               Excel.run(async (context) => {
-                var inkanName = $("#name").val();
+                var inkanName = '角印';
                 context.workbook.load("name");
                 await context.sync();
                 const alligator = ["XLSX", "XLSM", "XLSB", "XLS", "XLTX", "XLTM", "XLT"];
