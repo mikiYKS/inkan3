@@ -1,4 +1,4 @@
-Office.onReady(function () {
+$(document).ready(function () {
   $("#run").click(() => tryCatch(getKakuin));
 });
 
