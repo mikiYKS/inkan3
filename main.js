@@ -53,7 +53,6 @@ function getKakuin() {
                 inkanLog(inkanName, fileName);
               });
             });
-
           },
           function (data) {
             console.log(data);
@@ -86,25 +85,18 @@ Office.initialize = function (reason) {
   if (OfficeHelpers.Authenticator.isAuthDialog()) return;
 };
 
-async function onWorkSheetSingleClick(x, y, pic) {
-  await Excel.run(async (context) => {
-    const shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
-    const shpStampImage = shapes.addImage(pic);
-    shpStampImage.name = "印鑑";
-    shpStampImage.left = x;
-    shpStampImage.top = y;
-    await context.sync();
-  });
-}
-
+//アクティブセルに印影貼り付け
 async function inkanpaste(pic) {
   await Excel.run(async (context) => {
-    //アクティブセルの位置取得
     const cell = context.workbook.getActiveCell();
     cell.load("left").load("top");
     await context.sync();
-    //印鑑生成実行
-    onWorkSheetSingleClick(cell.left, cell.top, pic);
+    const shpStampImage = context.workbook.worksheets.getActiveWorksheet().shapes.addImage(pic);
+    shpStampImage.name = "印鑑";
+    shpStampImage.left = cell.left;
+    shpStampImage.top = cell.top;
+    shpStampImage.scaleHeight(0.5, Excel.ShapeScaleType.originalSize);
+    await context.sync();
   });
 }
 
@@ -124,9 +116,10 @@ function inkanLog(inkanName, inkanFile) {
     scope: scope
   });
 
+  //認証
   authenticator.authenticate(OfficeHelpers.DefaultEndpoints.Microsoft).then(function (token) {
     access_token = token.access_token;
-
+    //API呼び出し印鑑ログ投稿
     $(function () {
       $.ajax({
         url:
