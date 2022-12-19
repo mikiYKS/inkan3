@@ -95,7 +95,7 @@ async function inkanpaste(pic) {
     shpStampImage.name = "印鑑";
     shpStampImage.left = cell.left;
     shpStampImage.top = cell.top;
-    //shpStampImage.scaleHeight(0.5, Excel.ShapeScaleType.originalSize);
+    shpStampImage.height = 82.6;
     await context.sync();
   });
 }
