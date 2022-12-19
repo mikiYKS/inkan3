@@ -1,15 +1,13 @@
-  var authenticator;
-  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
-  var redirect_url = "https://mikiyks.github.io/inkan3/";
-  var scope;
-  var access_token;
-
 $(document).ready(function () {
   $("#run").click(() => tryCatch(getKakuin));
 });
 
 function getKakuin() {
-  scope = "https://graph.microsoft.com/Files.Read.All";
+  var authenticator;
+  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
+  var redirect_url = "https://mikiyks.github.io/inkan3/";
+  var scope = "https://graph.microsoft.com/Files.Read.All";
+  var access_token;
   authenticator = new OfficeHelpers.Authenticator();
   //access_token取得
   authenticator.endpoints.registerMicrosoftAuth(client_id, {
@@ -102,7 +100,11 @@ async function inkanpaste(pic) {
 
 //SharePointListにログ出力
 function inkanLog(inkanName, inkanFile) {
-  scope = "https://graph.microsoft.com/Sites.ReadWrite.All";
+  var authenticator;
+  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
+  var redirect_url = "https://mikiyks.github.io/inkan3/";
+  var scope = "https://graph.microsoft.com/Sites.ReadWrite.All";
+  var access_token;
   authenticator = new OfficeHelpers.Authenticator();
   //access_token取得
   authenticator.endpoints.registerMicrosoftAuth(client_id, {
