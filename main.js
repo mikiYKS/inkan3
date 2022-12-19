@@ -1,22 +1,21 @@
+  var authenticator;
+  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
+  var redirect_url = "https://mikiyks.github.io/inkan3/";
+  var scope;
+  var access_token;
+
 $(document).ready(function () {
   $("#run").click(() => tryCatch(getKakuin));
 });
 
 function getKakuin() {
-  var authenticator;
-  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
-  var redirect_url = "https://mikiyks.github.io/inkan3/";
-  var scope = "https://graph.microsoft.com/Files.Read.All";
-  var access_token;
-
+  scope = "https://graph.microsoft.com/Files.Read.All";
   authenticator = new OfficeHelpers.Authenticator();
-
   //access_token取得
   authenticator.endpoints.registerMicrosoftAuth(client_id, {
     redirectUrl: redirect_url,
     scope: scope
   });
-
   authenticator
     .authenticate(OfficeHelpers.DefaultEndpoints.Microsoft)
     .then(function (token) {
@@ -34,9 +33,9 @@ function getKakuin() {
           async function (data) {
             const obj = data["@microsoft.graph.downloadUrl"];
             var kakuinbase64 = await getImageBase64(obj);
+
             //ここからkakuinbase64を張り付ける処理
             inkanpaste(kakuinbase64);
-
             //ログ出力
             $(function () {
               Excel.run(async (context) => {
@@ -53,7 +52,6 @@ function getKakuin() {
                 inkanLog(inkanName, fileName);
               });
             });
-
           },
           function (data) {
             console.log(data);
@@ -86,47 +84,34 @@ Office.initialize = function (reason) {
   if (OfficeHelpers.Authenticator.isAuthDialog()) return;
 };
 
-async function onWorkSheetSingleClick(x, y, pic) {
-  await Excel.run(async (context) => {
-    const shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
-    const shpStampImage = shapes.addImage(pic);
-    shpStampImage.name = "印鑑";
-    shpStampImage.left = x;
-    shpStampImage.top = y;
-    await context.sync();
-  });
-}
-
+//アクティブセルに印影貼り付け
 async function inkanpaste(pic) {
   await Excel.run(async (context) => {
-    //アクティブセルの位置取得
+    const shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
     const cell = context.workbook.getActiveCell();
     cell.load("left").load("top");
     await context.sync();
-    //印鑑生成実行
-    onWorkSheetSingleClick(cell.left, cell.top, pic);
+    const shpStampImage = shapes.addImage(pic);
+    shpStampImage.name = "印鑑";
+    shpStampImage.left = cell.left;
+    shpStampImage.top = cell.top;
+    await context.sync();
   });
 }
 
 //SharePointListにログ出力
 function inkanLog(inkanName, inkanFile) {
-  var authenticator;
-  var client_id = "b52f7c0f-9962-4372-b84a-53bd6831df55";
-  var redirect_url = "https://mikiyks.github.io/inkan3/";
-  var scope = "https://graph.microsoft.com/Sites.ReadWrite.All";
-  var access_token;
-
+  scope = "https://graph.microsoft.com/Sites.ReadWrite.All";
   authenticator = new OfficeHelpers.Authenticator();
-
   //access_token取得
   authenticator.endpoints.registerMicrosoftAuth(client_id, {
     redirectUrl: redirect_url,
     scope: scope
   });
-
+  //認証
   authenticator.authenticate(OfficeHelpers.DefaultEndpoints.Microsoft).then(function (token) {
     access_token = token.access_token;
-
+    //API呼び出し印鑑ログ投稿
     $(function () {
       $.ajax({
         url:
