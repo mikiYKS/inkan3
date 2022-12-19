@@ -94,6 +94,7 @@ async function inkanpaste(pic) {
     shpStampImage.left = cell.left;
     shpStampImage.top = cell.top;
     shpStampImage.height = 82.6;
+    shpStampImage.width = 81.34;
     await context.sync();
   });
 }
