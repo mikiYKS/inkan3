@@ -93,6 +93,7 @@ async function inkanpaste(pic) {
     await context.sync();
     const shpStampImage = shapes.addImage(pic);
     shpStampImage.name = "印鑑";
+    shpStampImage.scaleHeight(0.5, "OriginalSize");
     shpStampImage.left = cell.left;
     shpStampImage.top = cell.top;
     await context.sync();
