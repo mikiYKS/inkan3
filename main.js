@@ -8,15 +8,12 @@ function getKakuin() {
   var redirect_url = "https://mikiyks.github.io/inkan3/";
   var scope = "https://graph.microsoft.com/Files.Read.All";
   var access_token;
-
   authenticator = new OfficeHelpers.Authenticator();
-
   //access_token取得
   authenticator.endpoints.registerMicrosoftAuth(client_id, {
     redirectUrl: redirect_url,
     scope: scope
   });
-
   authenticator
     .authenticate(OfficeHelpers.DefaultEndpoints.Microsoft)
     .then(function (token) {
@@ -34,9 +31,9 @@ function getKakuin() {
           async function (data) {
             const obj = data["@microsoft.graph.downloadUrl"];
             var kakuinbase64 = await getImageBase64(obj);
+
             //ここからkakuinbase64を張り付ける処理
             inkanpaste(kakuinbase64);
-
             //ログ出力
             $(function () {
               Excel.run(async (context) => {
@@ -88,10 +85,11 @@ Office.initialize = function (reason) {
 //アクティブセルに印影貼り付け
 async function inkanpaste(pic) {
   await Excel.run(async (context) => {
+    const shapes = context.workbook.worksheets.getActiveWorksheet().shapes;
     const cell = context.workbook.getActiveCell();
     cell.load("left").load("top");
     await context.sync();
-    const shpStampImage = context.workbook.worksheets.getActiveWorksheet().shapes.addImage(pic);
+    const shpStampImage = shapes.addImage(pic);
     shpStampImage.name = "印鑑";
     shpStampImage.left = cell.left;
     shpStampImage.top = cell.top;
@@ -107,15 +105,12 @@ function inkanLog(inkanName, inkanFile) {
   var redirect_url = "https://mikiyks.github.io/inkan3/";
   var scope = "https://graph.microsoft.com/Sites.ReadWrite.All";
   var access_token;
-
   authenticator = new OfficeHelpers.Authenticator();
-
   //access_token取得
   authenticator.endpoints.registerMicrosoftAuth(client_id, {
     redirectUrl: redirect_url,
     scope: scope
   });
-
   //認証
   authenticator.authenticate(OfficeHelpers.DefaultEndpoints.Microsoft).then(function (token) {
     access_token = token.access_token;
